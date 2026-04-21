@@ -1,9 +1,10 @@
 import '../global.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../store/auth';
 import { View, ActivityIndicator } from 'react-native';
+import { SplashAnimation } from '../components/SplashAnimation';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading, loadUser } = useAuthStore();
@@ -35,10 +36,19 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
-    <AuthGuard>
+    <>
       <StatusBar style="light" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </AuthGuard>
+      {showSplash && (
+        <SplashAnimation onDone={() => setShowSplash(false)} />
+      )}
+      {/* Montamos AuthGuard desde el inicio para que cargue el usuario
+          mientras el splash está visible — sin retrasos extra */}
+      <AuthGuard>
+        <Stack screenOptions={{ headerShown: false }} />
+      </AuthGuard>
+    </>
   );
 }
