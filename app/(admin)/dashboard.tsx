@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { adminApi } from '../../api/admin';
 import { useAuthStore } from '../../store/auth';
+import { showToast } from '../../components/Toast';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendiente', active: 'Activo', suspended: 'Suspendido',
@@ -35,13 +36,15 @@ export default function AdminDashboard() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleApprove = async (userId: string) => {
+  const handleApprove = async (userId: string, userName: string) => {
     setApproving(userId);
     try {
       await adminApi.approve(userId);
+      showToast(`✅ Cuenta de ${userName} aprobada`, 'success');
       await load();
-    } catch { /* silent */ }
-    finally { setApproving(null); }
+    } catch (e: any) {
+      showToast(e?.response?.data?.message ?? 'No se pudo aprobar la cuenta.', 'error');
+    } finally { setApproving(null); }
   };
 
   const totalVendors  = Object.entries(stats).filter(([k]) => k.startsWith('vendor')).reduce((s, [, v]) => s + v, 0);
@@ -119,7 +122,7 @@ export default function AdminDashboard() {
                       <Text className="text-white/30 text-xs">{ROLE_LABEL[u.role]}</Text>
                     </View>
                     <TouchableOpacity
-                      onPress={() => handleApprove(u.id)}
+                      onPress={() => handleApprove(u.id, u.businessName)}
                       disabled={approving === u.id}
                       className="bg-emerald-600 rounded-xl px-4 py-2 items-center justify-center"
                       activeOpacity={0.7}

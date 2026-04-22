@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuthStore } from '../store/auth';
 import { View, ActivityIndicator } from 'react-native';
 import { SplashAnimation } from '../components/SplashAnimation';
+import { ToastComponent } from '../components/Toast';
 
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading, loadUser } = useAuthStore();
@@ -49,6 +50,7 @@ export default function RootLayout() {
           mientras el splash está visible — sin retrasos extra */}
       <AuthGuard>
         <Stack screenOptions={{ headerShown: false }} />
+        <ToastComponent />
       </AuthGuard>
     </>
   );

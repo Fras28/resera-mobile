@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { adminApi } from '../../api/admin';
+import { showToast } from '../../components/Toast';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pendiente', active: 'Activo', suspended: 'Suspendido',
@@ -51,7 +52,7 @@ export default function AdminUsers() {
   useEffect(() => { load(); }, [load]);
 
   const handleAction = async (userId: string, action: Action, userName: string) => {
-    const needsConfirm = action !== 'approve' || action === 'toVendor' || action === 'toBuyer';
+    const needsConfirm = action !== 'approve';
     if (needsConfirm) {
       Alert.alert(
         ACTION_CONFIG[action].label,
@@ -61,16 +62,16 @@ export default function AdminUsers() {
           {
             text: ACTION_CONFIG[action].label,
             style: action === 'block' ? 'destructive' : 'default',
-            onPress: () => executeAction(userId, action),
+            onPress: () => executeAction(userId, action, userName),
           },
         ],
       );
     } else {
-      executeAction(userId, action);
+      executeAction(userId, action, userName);
     }
   };
 
-  const executeAction = async (userId: string, action: Action) => {
+  const executeAction = async (userId: string, action: Action, userName = '') => {
     setActionLoading(userId + action);
     try {
       if (action === 'approve')    await adminApi.approve(userId);
@@ -79,9 +80,22 @@ export default function AdminUsers() {
       if (action === 'reactivate') await adminApi.reactivate(userId);
       if (action === 'toVendor')   await adminApi.changeRole(userId, 'vendor');
       if (action === 'toBuyer')    await adminApi.changeRole(userId, 'buyer');
+
+      const msgs: Record<Action, [string, 'success' | 'warning']> = {
+        approve:    [`✅ Cuenta aprobada`, 'success'],
+        suspend:    [`⚠️ Cuenta suspendida`, 'warning'],
+        block:      [`🚫 Cuenta bloqueada`, 'warning'],
+        reactivate: [`✅ Cuenta reactivada`, 'success'],
+        toVendor:   [`🔁 Rol cambiado a Vendedor`, 'success'],
+        toBuyer:    [`🔁 Rol cambiado a Comprador`, 'success'],
+      };
+      const [msg, type] = msgs[action];
+      showToast(userName ? `${msg}: ${userName}` : msg, type);
+
       await load();
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo ejecutar la acción.');
+      const errMsg = e?.response?.data?.message ?? 'No se pudo ejecutar la acción.';
+      showToast(errMsg, 'error');
     } finally {
       setActionLoading(null);
     }
