@@ -13,6 +13,28 @@ const logoResera = require('../../assets/LogoRESERA.png');
 
 type Role = 'vendor' | 'buyer';
 
+// ⚠️ Definido FUERA del componente para evitar re-montaje en cada keystroke
+function Field({ label, value, onChangeText, placeholder, keyboard = 'default', secure = false }: {
+  label: string; value: string; onChangeText: (v: string) => void;
+  placeholder: string; keyboard?: any; secure?: boolean;
+}) {
+  return (
+    <View className="mb-4">
+      <Text className="text-white/60 text-xs uppercase tracking-widest mb-2">{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#ffffff30"
+        keyboardType={keyboard}
+        autoCapitalize="none"
+        secureTextEntry={secure}
+        className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-4 text-base"
+      />
+    </View>
+  );
+}
+
 export default function RegisterScreen() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
@@ -44,25 +66,6 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
-
-  const Field = ({ label, field, placeholder, keyboard = 'default', secure = false }: {
-    label: string; field: string; placeholder: string;
-    keyboard?: any; secure?: boolean;
-  }) => (
-    <View className="mb-4">
-      <Text className="text-white/60 text-xs uppercase tracking-widest mb-2">{label}</Text>
-      <TextInput
-        value={(form as any)[field]}
-        onChangeText={(v) => set(field, v)}
-        placeholder={placeholder}
-        placeholderTextColor="#ffffff30"
-        keyboardType={keyboard}
-        autoCapitalize="none"
-        secureTextEntry={secure}
-        className="bg-white/5 border border-white/10 text-white rounded-2xl px-4 py-4 text-base"
-      />
-    </View>
-  );
 
   return (
     <KeyboardAvoidingView
@@ -104,10 +107,10 @@ export default function RegisterScreen() {
             ))}
           </View>
 
-          <Field label="Razón social *"  field="businessName" placeholder="Mi Frigorífico SA" />
-          <Field label="CUIT *"          field="cuit"         placeholder="20-12345678-9" keyboard="numeric" />
-          <Field label="Email *"         field="email"        placeholder="tu@email.com"   keyboard="email-address" />
-          <Field label="Contraseña *"    field="password"     placeholder="Mínimo 8 caracteres" secure />
+          <Field label="Razón social *"  value={form.businessName} onChangeText={(v) => set('businessName', v)} placeholder="Mi Frigorífico SA" />
+          <Field label="CUIT *"          value={form.cuit}         onChangeText={(v) => set('cuit', v)}         placeholder="20-12345678-9" keyboard="numeric" />
+          <Field label="Email *"         value={form.email}        onChangeText={(v) => set('email', v)}        placeholder="tu@email.com"   keyboard="email-address" />
+          <Field label="Contraseña *"    value={form.password}     onChangeText={(v) => set('password', v)}     placeholder="Mínimo 8 caracteres" secure />
 
           {/* Province picker */}
           <View className="mb-4">
@@ -130,7 +133,7 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
-          <Field label="Teléfono"  field="phone"  placeholder="+54 11 1234-5678" keyboard="phone-pad" />
+          <Field label="Teléfono"  value={form.phone}  onChangeText={(v) => set('phone', v)}  placeholder="+54 11 1234-5678" keyboard="phone-pad" />
 
           {error ? (
             <View className="mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
