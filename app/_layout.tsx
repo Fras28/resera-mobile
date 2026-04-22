@@ -20,6 +20,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace('/(auth)/login');
     } else if (user && inAuth) {
       if (user.role === 'vendor') router.replace('/(vendor)/dashboard');
+      else if (user.role === 'admin') router.replace('/(admin)/dashboard');
       else router.replace('/(buyer)/marketplace');
     }
   }, [user, loading, segments]);
