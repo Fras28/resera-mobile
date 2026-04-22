@@ -19,6 +19,9 @@ export const adminApi = {
   reactivate: (id: string) =>
     apiClient.patch(`/users/${id}/reactivate`).then((r) => r.data?.data ?? r.data),
 
+  changeRole: (id: string, role: 'vendor' | 'buyer') =>
+    apiClient.patch(`/users/${id}/change-role`, { role }).then((r) => r.data?.data ?? r.data),
+
   getCommissionStats: () =>
     apiClient.get('/payments/admin/commission-stats').then((r) => r.data?.data ?? r.data),
 };

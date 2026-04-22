@@ -16,13 +16,15 @@ const STATUS_COLOR: Record<string, string> = {
 };
 const ROLE_LABEL: Record<string, string> = { vendor: 'Vendedor', buyer: 'Comprador', admin: 'Admin' };
 
-type Action = 'approve' | 'suspend' | 'block' | 'reactivate';
+type Action = 'approve' | 'suspend' | 'block' | 'reactivate' | 'toVendor' | 'toBuyer';
 
 const ACTION_CONFIG: Record<Action, { label: string; color: string; textColor: string }> = {
-  approve:    { label: 'Aprobar',    color: '#059669', textColor: '#fff' },
-  suspend:    { label: 'Suspender',  color: '#EA580C', textColor: '#fff' },
-  block:      { label: 'Bloquear',   color: '#DC2626', textColor: '#fff' },
-  reactivate: { label: 'Reactivar', color: '#D4A853', textColor: '#000' },
+  approve:    { label: 'Aprobar',       color: '#059669', textColor: '#fff' },
+  suspend:    { label: 'Suspender',     color: '#EA580C', textColor: '#fff' },
+  block:      { label: 'Bloquear',      color: '#DC2626', textColor: '#fff' },
+  reactivate: { label: 'Reactivar',    color: '#D4A853', textColor: '#000' },
+  toVendor:   { label: '→ Vendedor',   color: '#4F46E5', textColor: '#fff' },
+  toBuyer:    { label: '→ Comprador',  color: '#4F46E5', textColor: '#fff' },
 };
 
 export default function AdminUsers() {
@@ -49,7 +51,7 @@ export default function AdminUsers() {
   useEffect(() => { load(); }, [load]);
 
   const handleAction = async (userId: string, action: Action, userName: string) => {
-    const needsConfirm = action !== 'approve';
+    const needsConfirm = action !== 'approve' || action === 'toVendor' || action === 'toBuyer';
     if (needsConfirm) {
       Alert.alert(
         ACTION_CONFIG[action].label,
@@ -75,6 +77,8 @@ export default function AdminUsers() {
       if (action === 'suspend')    await adminApi.suspend(userId);
       if (action === 'block')      await adminApi.block(userId);
       if (action === 'reactivate') await adminApi.reactivate(userId);
+      if (action === 'toVendor')   await adminApi.changeRole(userId, 'vendor');
+      if (action === 'toBuyer')    await adminApi.changeRole(userId, 'buyer');
       await load();
     } catch (e: any) {
       Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo ejecutar la acción.');
@@ -95,6 +99,8 @@ export default function AdminUsers() {
     if (u.status === 'active' || u.status === 'pending') actions.push('suspend');
     if (u.status !== 'blocked' && u.role !== 'admin') actions.push('block');
     if (u.status === 'suspended' || u.status === 'blocked') actions.push('reactivate');
+    if (u.role === 'vendor') actions.push('toBuyer');
+    if (u.role === 'buyer')  actions.push('toVendor');
     return actions;
   };
 
