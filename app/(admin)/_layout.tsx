@@ -38,6 +38,10 @@ export default function AdminLayout() {
         name="commissions"
         options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="💰" label="Comisiones" focused={focused} /> }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="👤" label="Perfil" focused={focused} /> }}
+      />
     </Tabs>
   );
 }

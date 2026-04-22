@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/auth';
 import { showToast } from '../../components/Toast';
 
-export default function BuyerProfileScreen() {
+export default function AdminProfileScreen() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -13,7 +13,7 @@ export default function BuyerProfileScreen() {
   const handleLogout = () => {
     Alert.alert(
       'Cerrar sesión',
-      '¿Estás seguro que querés salir?',
+      '¿Salir del panel de administración?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -36,69 +36,57 @@ export default function BuyerProfileScreen() {
 
   const u = user as any;
 
-  const infoRows = [
-    { label: 'Rol',       value: 'Comprador' },
-    { label: 'Email',     value: u?.email     ?? '—' },
-    { label: 'CUIT',      value: u?.cuit      ?? '—' },
-    { label: 'Provincia', value: u?.province  ?? '—' },
-    { label: 'Estado',    value: u?.status === 'active' ? '✅ Activo' : u?.status ?? '—' },
-  ];
-
   return (
     <SafeAreaView className="flex-1 bg-dark" edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
 
         {/* Header */}
         <View className="px-4 pt-4 pb-3">
-          <Text className="text-gold text-xs font-bold uppercase tracking-widest mb-1">Comprador</Text>
-          <Text className="text-white text-2xl font-black">Mi Perfil</Text>
+          <Text className="text-gold text-xs font-bold uppercase tracking-widest mb-1">Administración</Text>
+          <Text className="text-white text-2xl font-black">Mi Cuenta</Text>
         </View>
 
-        {/* Avatar + nombre */}
+        {/* Avatar */}
         <View className="items-center py-8">
-          <View className="w-24 h-24 rounded-full bg-white/10 items-center justify-center mb-4 border-2 border-white/10">
-            <Text style={{ fontSize: 44 }}>🛒</Text>
+          <View className="w-24 h-24 rounded-full bg-meat-red/20 border-2 border-meat-red/40 items-center justify-center mb-4">
+            <Text style={{ fontSize: 44 }}>🛡️</Text>
           </View>
           <Text className="text-white text-xl font-bold">{u?.businessName ?? '—'}</Text>
           <Text className="text-white/40 text-sm mt-1">{u?.email ?? '—'}</Text>
-          {u?.status === 'active' && (
-            <View className="mt-2 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-3 py-1">
-              <Text className="text-emerald-400 text-xs font-semibold">✓ Cuenta activa</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Score crediticio */}
-        {u?.creditScore !== undefined && (
-          <View className="mx-4 mb-4 bg-white/5 rounded-2xl p-5">
-            <Text className="text-white/40 text-xs uppercase tracking-wider mb-3">Score Crediticio</Text>
-            <View className="flex-row items-end gap-2">
-              <Text className="text-gold text-4xl font-black">{u.creditScore}</Text>
-              <Text className="text-white/40 text-sm mb-1">/ 100</Text>
-            </View>
-            {/* Barra de progreso */}
-            <View className="mt-3 h-2 bg-white/10 rounded-full overflow-hidden">
-              <View
-                className="h-full rounded-full"
-                style={{
-                  width: `${Math.min(u.creditScore, 100)}%`,
-                  backgroundColor: u.creditScore >= 70 ? '#10B981' : u.creditScore >= 40 ? '#F59E0B' : '#EF4444',
-                }}
-              />
-            </View>
-            <Text className="text-white/30 text-xs mt-2">
-              {u.creditScore >= 70 ? 'Excelente — seña 0%' : u.creditScore >= 40 ? 'Regular — seña 30%' : 'Bajo — seña 50%'}
-            </Text>
+          <View className="mt-2 bg-meat-red/15 border border-meat-red/30 rounded-full px-4 py-1">
+            <Text className="text-meat-red text-xs font-bold uppercase tracking-widest">Administrador</Text>
           </View>
-        )}
+        </View>
 
         {/* Info */}
         <View className="mx-4 mb-4 bg-white/5 rounded-2xl p-5">
           <Text className="text-white/40 text-xs uppercase tracking-wider mb-3">Información de la cuenta</Text>
-          {infoRows.map(({ label, value }) => (
+          {[
+            { label: 'Rol',    value: 'Administrador RESERA' },
+            { label: 'Email',  value: u?.email ?? '—' },
+            { label: 'Estado', value: '✅ Activo' },
+          ].map(({ label, value }) => (
             <View key={label} className="flex-row justify-between py-2.5 border-b border-white/5">
               <Text className="text-white/40 text-sm">{label}</Text>
               <Text className="text-white text-sm font-medium">{value}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Accesos rápidos */}
+        <View className="mx-4 mb-4 bg-white/5 rounded-2xl p-5">
+          <Text className="text-white/40 text-xs uppercase tracking-wider mb-3">Panel de control</Text>
+          {[
+            { icon: '📊', label: 'Resumen general',     desc: 'Stats y cuentas pendientes' },
+            { icon: '👥', label: 'Gestión de usuarios',  desc: 'Aprobar, suspender, cambiar roles' },
+            { icon: '💰', label: 'Comisiones MP',        desc: 'Dashboard de ingresos del 2%' },
+          ].map(({ icon, label, desc }) => (
+            <View key={label} className="flex-row items-center gap-3 py-3 border-b border-white/5">
+              <Text style={{ fontSize: 22 }}>{icon}</Text>
+              <View>
+                <Text className="text-white text-sm font-semibold">{label}</Text>
+                <Text className="text-white/30 text-xs mt-0.5">{desc}</Text>
+              </View>
             </View>
           ))}
         </View>
