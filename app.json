@@ -27,6 +27,7 @@
       },
       "package": "com.morton.resera",
       "permissions": [
+        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ]
     },
@@ -45,6 +46,12 @@
       "eas": {
         "projectId": "e97c8205-2472-43c9-9267-bc1afcb79511"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e97c8205-2472-43c9-9267-bc1afcb79511"
     }
   }
 }

@@ -10,6 +10,14 @@ import { ordersApi }   from '../../api/orders';
 import { favoritesApi } from '../../api/favorites';
 import { useAuthStore } from '../../store/auth';
 import { distanceBetweenProvinces, distanceLabel } from '../../utils/provinces';
+import {
+  FadeInView,
+  SlideInView,
+  PressableScale,
+  HeartButton,
+  ListingCardSkeleton,
+} from '../../components/animated';
+import { staggerDelay } from '../../utils/motion';
 
 const TYPE_LABELS: Record<string, string> = {
   res_entera: 'Res Entera', media_res: 'Media Res', lote_cortes: 'Lote/Cortes',
@@ -114,7 +122,7 @@ export default function MarketplaceScreen() {
     }
   };
 
-  const renderCard = ({ item: l }: { item: any }) => {
+  const renderCard = ({ item: l, index }: { item: any; index: number }) => {
     const hero      = l.coverImage || l.images?.[0] || null;
     const vendorId  = l.vendor?.id ?? null;
     const isFav     = vendorId ? favoriteIds.has(vendorId) : false;
@@ -124,11 +132,13 @@ export default function MarketplaceScreen() {
       : null;
 
     return (
-      <TouchableOpacity
-        onPress={() => setSelected(l)}
-        className="bg-white/5 rounded-2xl overflow-hidden mb-4 mx-4"
-        activeOpacity={0.85}
-      >
+      <FadeInView delay={staggerDelay(index)} translateY={12}>
+        <PressableScale
+          onPress={() => setSelected(l)}
+          className="bg-white/5 rounded-2xl overflow-hidden mb-4 mx-4"
+          accessibilityLabel={`Lote ${l.originFarm ?? ''} ${TYPE_LABELS[l.type] ?? l.type}`}
+          accessibilityHint="Toca para ver detalle del lote"
+        >
         <View className="relative">
           {hero ? (
             <Image source={{ uri: hero }} className="w-full h-48" resizeMode="cover" />
@@ -150,17 +160,13 @@ export default function MarketplaceScreen() {
 
           {/* Favorite button */}
           {vendorId && (
-            <TouchableOpacity
-              onPress={(e) => { e.stopPropagation?.(); toggleFavorite(vendorId); }}
-              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 items-center justify-center"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              {togglingFav === vendorId ? (
-                <ActivityIndicator size="small" color="#D4A853" />
-              ) : (
-                <Text style={{ fontSize: 18 }}>{isFav ? '❤️' : '🤍'}</Text>
-              )}
-            </TouchableOpacity>
+            <View className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 items-center justify-center">
+              <HeartButton
+                active={isFav}
+                loading={togglingFav === vendorId}
+                onPress={() => toggleFavorite(vendorId)}
+              />
+            </View>
           )}
 
           {/* Delivery badge */}
@@ -229,14 +235,15 @@ export default function MarketplaceScreen() {
             </View>
           )}
         </View>
-      </TouchableOpacity>
+        </PressableScale>
+      </FadeInView>
     );
   };
 
   return (
     <SafeAreaView className="flex-1 bg-dark" edges={['top']}>
       {/* Header */}
-      <View className="px-4 pt-4 pb-3">
+      <SlideInView from="up" distance={12} className="px-4 pt-4 pb-3">
         <Text className="text-gold text-xs font-bold uppercase tracking-widest mb-1">Mercado</Text>
         <Text className="text-white text-2xl font-black">Catálogo de Reses</Text>
         {buyerProvince && (
@@ -250,12 +257,17 @@ export default function MarketplaceScreen() {
           placeholder="Buscá por provincia, establecimiento o vendedor..."
           placeholderTextColor="#ffffff30"
           className="mt-3 bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm"
+          accessibilityLabel="Buscar lotes"
         />
-      </View>
+      </SlideInView>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#D4A853" size="large" />
+        <View className="pt-2" accessibilityLabel="Cargando lotes" accessibilityRole="progressbar">
+          {[0, 1, 2].map((i) => (
+            <FadeInView key={i} delay={staggerDelay(i, 60)}>
+              <ListingCardSkeleton />
+            </FadeInView>
+          ))}
         </View>
       ) : (
         <FlatList
@@ -390,17 +402,18 @@ export default function MarketplaceScreen() {
             </ScrollView>
 
             <View className="px-6 pb-8 pt-2 border-t border-white/5">
-              <TouchableOpacity
+              <PressableScale
                 onPress={handleBuy}
                 disabled={buying || selected.status !== 'publicado'}
                 className="bg-meat-red rounded-2xl py-4 items-center"
-                activeOpacity={0.8}
+                accessibilityLabel="Comprar este lote"
+                accessibilityState={{ busy: buying, disabled: buying || selected.status !== 'publicado' }}
               >
                 {buying
                   ? <ActivityIndicator color="#fff" />
                   : <Text className="text-white font-bold text-base uppercase tracking-wider">Comprar este lote</Text>
                 }
-              </TouchableOpacity>
+              </PressableScale>
             </View>
           </View>
         )}
